@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot - Sistema de Servicos</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .chat-container {
+            width: 100%;
+            max-width: 800px;
+            background: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-header-content {
+            text-align: center;
+            flex: 1;
+        }
+
+        .chat-header h1 {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+
+        .chat-header p {
+            font-size: 0.85rem;
+            opacity: 0.9;
+        }
+
+        .back-link {
+            color: white;
+            text-decoration: none;
+            padding: 8px 15px;
+            border: 2px solid rgba(255,255,255,0.5);
+            border-radius: 20px;
+            font-size: 0.85rem;
+            transition: all 0.3s;
+        }
+
+        .back-link:hover {
+            background: rgba(255,255,255,0.2);
+            border-color: white;
+        }
+
+        .chat-messages {
+            height: 400px;
+            overflow-y: auto;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .message.user {
+            align-items: flex-end;
+        }
+
+        .message.bot {
+            align-items: flex-start;
+        }
+
+        .message-content {
+            max-width: 80%;
+            padding: 12px 18px;
+            border-radius: 18px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .message.user .message-content {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-bottom-right-radius: 5px;
+        }
+
+        .message.bot .message-content {
+            background: white;
+            color: #333;
+            border-bottom-left-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .message-time {
+            font-size: 0.7rem;
+            color: #999;
+            margin-top: 5px;
+            padding: 0 5px;
+        }
+
+        .data-card {
+            background: #f0f4ff;
+            border-left: 4px solid #667eea;
+            padding: 12px;
+            margin-top: 10px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+        }
+
+        .data-card strong {
+            color: #667eea;
+        }
+
+        .data-list {
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            margin-top: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .data-list-item {
+            padding: 10px 15px;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 0.85rem;
+        }
+
+        .data-list-item:last-child {
+            border-bottom: none;
+        }
+
+        .data-list-item:hover {
+            background: #f8f9fa;
+        }
+
+        .chat-input-container {
+            display: flex;
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 15px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 25px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .chat-input:focus {
+            border-color: #667eea;
+        }
+
+        .chat-send {
+            margin-left: 10px;
+            padding: 15px 25px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .chat-send:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .error {
+            color: #e74c3c;
+            background: #ffeaea;
+            border-left-color: #e74c3c;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <a href="index.html" class="back-link">← Menu</a>
+            <div class="chat-header-content">
+                <h1>Assistente Virtual</h1>
+                <p>Consulte clientes, pacientes, servicos, medicamentos e CIDs</p>
+            </div>
+            <div style="width: 80px;"></div>
+        </div>
+
+        <div class="chat-messages" id="chatMessages">
+            <div class="message bot">
+                <div class="message-content">
+                    Ola! Sou o assistente virtual do sistema. Pode falar comigo de forma natural!<br><br>
+                    <strong>Enderecos:</strong> buscar por ID, CEP, cidade ou consultar CEP externo<br>
+                    <strong>Ordem de Servico:</strong> cliente por CPF, servicos, ordens de servico<br>
+                    <strong>Receita Medica:</strong> paciente por CPF, CID, medicamentos, receitas<br><br>
+                    Exemplos: "listar servicos", "cliente 12345678901", "os 1", "J00"<br>
+                    Digite "ajuda" para ver mais exemplos.
+                </div>
+                <span class="message-time">Agora</span>
+            </div>
+        </div>
+
+        <div class="chat-input-container">
+            <input type="text" class="chat-input" id="userInput"
+                   placeholder="Digite sua consulta..."
+                   onkeypress="handleKeyPress(event)">
+            <button class="chat-send" onclick="sendMessage()">Enviar</button>
+        </div>
+    </div>
+
+    <script>
+        // Configuracao das URLs base dos servicos
+        const BASE_URLS = {
+            endereco: 'http://localhost:8080/MyEnderecoServicos/resources/endereco',
+            ordemServico: 'http://localhost:8080/MyOrdemServicos/resources',
+            receitaMedica: 'http://localhost:8080/MyReceitaServicos/resources'
+        };
+
+        // Funcao helper para formatar data (corrige bug de Invalid Date)
+        function formatarData(dataStr) {
+            if (!dataStr) return 'N/A';
+            // Remove [UTC] ou qualquer timezone entre colchetes
+            const dataLimpa = dataStr.replace(/\[.*\]/, '');
+            const data = new Date(dataLimpa);
+            if (isNaN(data.getTime())) return 'N/A';
+            return data.toLocaleDateString('pt-BR');
+        }
+
+        // Padroes de reconhecimento de intencao (keywords expandidas para linguagem natural)
+        const PATTERNS = {
+            // Enderecos
+            enderecoPorId: {
+                keywords: ['endereco id', 'buscar endereco id', 'endereco por id', 'encontrar endereco', 'ver endereco id', 'mostrar endereco id'],
+                regex: /endereco.*?(?:id|numero)?[:\s#]*(\d+)/i,
+                action: 'getEnderecoById'
+            },
+            enderecoPorCep: {
+                keywords: ['endereco cep', 'buscar endereco cep', 'endereco por cep', 'cep local', 'buscar por cep', 'endereco do cep', 'qual endereco do cep'],
+                regex: /(?:endereco|buscar).*?cep[:\s]*(\d{8})/i,
+                altRegex: /cep[:\s]*(\d{8})/i,
+                action: 'getEnderecoByCep'
+            },
+            cepExterno: {
+                keywords: ['cep externo', 'viacep', 'consultar cep', 'cep nuvem', 'cep online', 'cep via'],
+                regex: /(?:cep\s*externo|viacep|consultar\s*cep|cep\s*nuvem|cep\s*online|cep\s*via)[:\s]*(\d{8})/i,
+                altRegex: /(\d{8})/i,
+                action: 'getCepExterno'
+            },
+            cidadePorId: {
+                keywords: ['cidade', 'buscar cidade', 'cidade id', 'municipio', 'ver cidade', 'mostrar cidade', 'qual cidade'],
+                regex: /cidade.*?(?:id)?[:\s]*(\d+)/i,
+                action: 'getCidadeById'
+            },
+
+            // Ordem de Servico
+            clienteCpf: {
+                keywords: ['cliente', 'buscar cliente', 'consultar cliente', 'cliente cpf', 'cpf do cliente', 'encontrar cliente', 'ver cliente', 'mostrar cliente', 'dados do cliente', 'info cliente', 'informacoes do cliente', 'qual cliente'],
+                regex: /(?:cliente|buscar cliente|consultar cliente).*?(\d{11})/i,
+                altRegex: /cpf[:\s]*(\d{11})/i,
+                action: 'getClienteByCpf'
+            },
+            listarServicos: {
+                keywords: ['listar servicos', 'servicos disponiveis', 'quais servicos', 'mostrar servicos', 'ver servicos', 'lista de servicos', 'todos servicos', 'todos os servicos', 'me mostra os servicos', 'quais sao os servicos', 'servicos oferecidos', 'tem quais servicos', 'que servicos tem'],
+                tags: ['servicos', 'servico'],
+                action: 'getServicos'
+            },
+            listarOrdens: {
+                keywords: ['listar ordens', 'listar os', 'todas ordens', 'ordens de servico', 'ver ordens', 'mostrar ordens', 'todas as ordens', 'lista de os', 'ver as os', 'mostrar as os', 'lista ordens', 'me mostra as ordens', 'quais ordens'],
+                tags: ['ordens'],
+                action: 'getOrdensServico'
+            },
+            buscarOrdem: {
+                keywords: ['buscar ordem', 'ordem numero', 'os numero', 'ver ordem', 'mostrar ordem', 'consultar ordem', 'detalhe ordem', 'detalhes da ordem', 'detalhes da os', 'ordem de servico numero', 'qual a os', 'me mostra a os'],
+                regex: /(?:ordem|os)\s*(?:de\s*servico)?\s*(?:numero|nro|n|#)?\s*[:\s]*(\d+)/i,
+                altRegex: /(?:buscar|ver|mostrar|consultar|detalhe)\s*(?:a\s*)?(?:ordem|os)\s*(\d+)/i,
+                action: 'getOrdemByNumero'
+            },
+
+            // Receita Medica
+            pacienteCpf: {
+                keywords: ['paciente', 'buscar paciente', 'consultar paciente', 'paciente cpf', 'cpf do paciente', 'encontrar paciente', 'ver paciente', 'mostrar paciente', 'dados do paciente', 'info paciente', 'informacoes do paciente', 'qual paciente'],
+                regex: /(?:paciente|buscar paciente|consultar paciente).*?(\d{11})/i,
+                altRegex: /cpf[:\s]*(\d{11})/i,
+                action: 'getPacienteByCpf'
+            },
+            buscarCid: {
+                keywords: ['cid', 'buscar cid', 'consultar cid', 'codigo cid', 'doenca', 'diagnostico', 'ver cid', 'mostrar cid', 'qual cid', 'o que e o cid', 'o que significa'],
+                regex: /(?:cid|buscar cid|consultar cid|codigo|diagnostico|doenca)[:\s]*([A-Z]\d{2,3}(?:\.\d)?)/i,
+                altRegex: /([A-Z]\d{2,3}(?:\.\d)?)/i,
+                action: 'getCidByCodigo'
+            },
+            listarMedicamentos: {
+                keywords: ['listar medicamentos', 'medicamentos disponiveis', 'quais medicamentos', 'mostrar medicamentos', 'ver medicamentos', 'remedios', 'lista de medicamentos', 'todos medicamentos', 'todos os medicamentos', 'quais remedios', 'ver remedios', 'mostrar remedios', 'tem quais medicamentos', 'que remedios tem', 'me mostra os medicamentos'],
+                tags: ['medicamentos', 'medicamento', 'remedios', 'remedio'],
+                action: 'getMedicamentos'
+            },
+            buscarMedicamento: {
+                keywords: ['buscar medicamento', 'procurar medicamento', 'encontrar medicamento', 'pesquisar medicamento', 'buscar remedio', 'procurar remedio'],
+                regex: /(?:buscar|procurar|encontrar|pesquisar)\s+(?:medicamento|remedio)[:\s]+(.+)/i,
+                altRegex: /(?:medicamento|remedio)[:\s]+([a-zA-Z]+)/i,
+                action: 'getMedicamentoByNome'
+            },
+            listarReceitas: {
+                keywords: ['listar receitas', 'todas receitas', 'receitas medicas', 'ver receitas', 'mostrar receitas', 'lista de receitas', 'todas as receitas', 'receitas emitidas', 'me mostra as receitas', 'quais receitas'],
+                tags: ['receitas'],
+                action: 'getReceitasMedicas'
+            },
+            buscarReceita: {
+                keywords: ['buscar receita', 'receita numero', 'ver receita', 'mostrar receita', 'consultar receita', 'detalhe receita', 'detalhes da receita', 'receita medica numero', 'qual a receita', 'me mostra a receita'],
+                regex: /receita\s*(?:medica)?\s*(?:numero|nro|n|#)?\s*[:\s]*(\d+)/i,
+                altRegex: /(?:buscar|ver|mostrar|consultar|detalhe)\s*(?:a\s*)?receita\s*(\d+)/i,
+                action: 'getReceitaByNumero'
+            },
+
+            // Ajuda
+            ajuda: {
+                keywords: ['ajuda', 'help', 'como usar', 'comandos', 'o que voce faz', 'opcoes', 'o que posso fazer', 'como funciona', 'menu', 'inicio', 'oi', 'ola', 'bom dia', 'boa tarde', 'boa noite'],
+                action: 'showHelp'
+            }
+        };
+
+        // Funcao para normalizar texto (remover acentos e lowercase)
+        function normalizeText(text) {
+            return text.toLowerCase()
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .trim();
+        }
+
+        // Funcao para extrair CPF do texto
+        function extractCpf(text) {
+            const cpfMatch = text.match(/\d{11}/);
+            if (cpfMatch) return cpfMatch[0];
+
+            // Tentar formato com pontos e traco
+            const cpfFormatted = text.match(/\d{3}\.?\d{3}\.?\d{3}-?\d{2}/);
+            if (cpfFormatted) {
+                return cpfFormatted[0].replace(/\D/g, '');
+            }
+            return null;
+        }
+
+        // Funcao para calcular pontuacao de similaridade entre input e pattern
+        function calcMatchScore(normalizedText, pattern) {
+            const inputWords = normalizedText.split(/\s+/).filter(w => w.length > 1);
+            let score = 0;
+
+            // Fase 1: keyword exata (substring) - peso alto
+            for (const kw of pattern.keywords) {
+                const normalizedKw = normalizeText(kw);
+                if (normalizedText.includes(normalizedKw)) {
+                    // Bonus proporcional ao tamanho da keyword (frases mais longas = mais especificas)
+                    score += 100 + normalizedKw.split(/\s+/).length * 20;
+                }
+            }
+
+            // Fase 2: tags (palavra exata presente no input) - peso medio
+            if (pattern.tags) {
+                for (const tag of pattern.tags) {
+                    const normalizedTag = normalizeText(tag);
+                    if (inputWords.includes(normalizedTag)) {
+                        score += 60;
+                    }
+                }
+            }
+
+            // Fase 3: overlap de palavras individuais das keywords - peso baixo
+            if (score === 0) {
+                const allKeywordWords = new Set();
+                for (const kw of pattern.keywords) {
+                    for (const word of normalizeText(kw).split(/\s+/)) {
+                        if (word.length > 2) allKeywordWords.add(word);
+                    }
+                }
+                let wordMatches = 0;
+                for (const word of inputWords) {
+                    if (allKeywordWords.has(word)) wordMatches++;
+                }
+                if (wordMatches > 0) {
+                    score += wordMatches * 25;
+                }
+            }
+
+            return score;
+        }
+
+        // Funcao para extrair parametros de um match
+        function extractParams(text, key, pattern) {
+            let params = {};
+
+            if (pattern.regex) {
+                let match = text.match(pattern.regex);
+                if (!match && pattern.altRegex) {
+                    match = text.match(pattern.altRegex);
+                }
+                if (match) {
+                    params.value = match[1];
+                }
+            }
+
+            // Para CPF, tentar extrair de qualquer forma
+            if (key === 'clienteCpf' || key === 'pacienteCpf') {
+                const cpf = extractCpf(text);
+                if (cpf) params.value = cpf;
+            }
+
+            return params;
+        }
+
+        // Funcao para interpretar a intencao do usuario
+        function interpretIntent(text) {
+            const normalizedText = normalizeText(text);
+
+            // Calcular score para cada padrao
+            let bestMatch = null;
+            let bestScore = 0;
+            let bestKey = null;
+
+            for (const [key, pattern] of Object.entries(PATTERNS)) {
+                const score = calcMatchScore(normalizedText, pattern);
+                if (score > bestScore) {
+                    bestScore = score;
+                    bestMatch = pattern;
+                    bestKey = key;
+                }
+            }
+
+            // Se encontrou match com score minimo
+            if (bestScore >= 25 && bestMatch) {
+                const params = extractParams(text, bestKey, bestMatch);
+                return { action: bestMatch.action, params };
+            }
+
+            // Fallback: detectar CPF solto (11 digitos)
+            const cpf = extractCpf(text);
+            if (cpf) {
+                if (normalizedText.includes('paciente')) {
+                    return { action: 'getPacienteByCpf', params: { value: cpf } };
+                }
+                // Default: tenta como cliente
+                return { action: 'getClienteByCpf', params: { value: cpf } };
+            }
+
+            // Fallback: detectar codigo CID solto (ex: J00, G43, E11.0)
+            const cidMatch = text.match(/\b([A-Z]\d{2,3}(?:\.\d)?)\b/);
+            if (cidMatch) {
+                return { action: 'getCidByCodigo', params: { value: cidMatch[1] } };
+            }
+
+            // Fallback: detectar numero solto (ex: "3" -> buscar OS)
+            const bareNumber = normalizedText.match(/^\s*#?\s*(\d{1,5})\s*$/);
+            if (bareNumber) {
+                return { action: 'getOrdemByNumero', params: { value: bareNumber[1] } };
+            }
+
+            return null;
+        }
+
+        // Funcoes de API - Enderecos
+        async function getEnderecoById(id) {
+            const response = await fetch(`${BASE_URLS.endereco}/id/${id}`);
+            if (!response.ok) {
+                if (response.status === 404) throw new Error('Endereco nao encontrado');
+                throw new Error('Erro ao buscar endereco');
+            }
+            return await response.json();
+        }
+
+        async function getEnderecoByCep(cep) {
+            const response = await fetch(`${BASE_URLS.endereco}/cep/${cep}`);
+            if (!response.ok) {
+                if (response.status === 404) throw new Error('CEP nao encontrado no banco local');
+                throw new Error('Erro ao buscar endereco');
+            }
+            return await response.json();
+        }
+
+        async function getCepExterno(cep) {
+            const response = await fetch(`${BASE_URLS.endereco}/externo/${cep}`);
+            if (!response.ok) throw new Error('Erro ao consultar CEP externo');
+            return await response.json();
+        }
+
+        async function getCidadeById(id) {
+            const response = await fetch(`${BASE_URLS.endereco}/cidade/${id}`);
+            if (!response.ok) {
+                if (response.status === 404) throw new Error('Cidade nao encontrada');
+                throw new Error('Erro ao buscar cidade');
+            }
+            return await response.json();
+        }
+
+        // Funcoes de API - Ordem de Servico
+        async function getClienteByCpf(cpf) {
+            const response = await fetch(`${BASE_URLS.ordemServico}/cliente/cpf/${cpf}`);
+            if (!response.ok) {
+                if (response.status === 404) throw new Error('Cliente nao encontrado');
+                throw new Error('Erro ao buscar cliente');
+            }
+            return await response.json();
+        }
+
+        async function getServicos() {
+            const response = await fetch(`${BASE_URLS.ordemServico}/servico`);
+            if (!response.ok) throw new Error('Erro ao listar servicos');
+            return await response.json();
+        }
+
+        async function getOrdensServico() {
+            const response = await fetch(`${BASE_URLS.ordemServico}/ordem-servico`);
+            if (!response.ok) throw new Error('Erro ao listar ordens de servico');
+            return await response.json();
+        }
+
+        async function getOrdemByNumero(nro) {
+            const response = await fetch(`${BASE_URLS.ordemServico}/ordem-servico/${nro}`);
+            if (!response.ok) {
+                if (response.status === 404) throw new Error('Ordem de servico nao encontrada');
+                throw new Error('Erro ao buscar ordem de servico');
+            }
+            return await response.json();
+        }
+
+        // Funcoes de API - Receita Medica
+        async function getPacienteByCpf(cpf) {
+            const response = await fetch(`${BASE_URLS.receitaMedica}/paciente/cpf/${cpf}`);
+            if (!response.ok) {
+                if (response.status === 404) throw new Error('Paciente nao encontrado');
+                throw new Error('Erro ao buscar paciente');
+            }
+            return await response.json();
+        }
+
+        async function getCidByCodigo(codigo) {
+            const response = await fetch(`${BASE_URLS.receitaMedica}/cid/${codigo}`);
+            if (!response.ok) {
+                if (response.status === 404) throw new Error('CID nao encontrado');
+                throw new Error('Erro ao buscar CID');
+            }
+            return await response.json();
+        }
+
+        async function getMedicamentos() {
+            const response = await fetch(`${BASE_URLS.receitaMedica}/medicamento`);
+            if (!response.ok) throw new Error('Erro ao listar medicamentos');
+            return await response.json();
+        }
+
+        async function getMedicamentoByNome(nome) {
+            const response = await fetch(`${BASE_URLS.receitaMedica}/medicamento?nome=${encodeURIComponent(nome)}`);
+            if (!response.ok) throw new Error('Erro ao buscar medicamentos');
+            return await response.json();
+        }
+
+        async function getReceitasMedicas() {
+            const response = await fetch(`${BASE_URLS.receitaMedica}/receita-medica`);
+            if (!response.ok) throw new Error('Erro ao listar receitas medicas');
+            return await response.json();
+        }
+
+        async function getReceitaByNumero(nro) {
+            const response = await fetch(`${BASE_URLS.receitaMedica}/receita-medica/${nro}`);
+            if (!response.ok) {
+                if (response.status === 404) throw new Error('Receita medica nao encontrada');
+                throw new Error('Erro ao buscar receita medica');
+            }
+            return await response.json();
+        }
+
+        // Formatadores de resposta - Enderecos
+        function formatEnderecoResponse(endereco) {
+            return `
+                <div class="data-card">
+                    <strong>Endereco Encontrado</strong><br><br>
+                    <strong>ID:</strong> ${endereco.idEndereco}<br>
+                    <strong>CEP:</strong> ${endereco.cep}<br>
+                    <strong>Logradouro:</strong> ${endereco.logradouro?.tipo?.nome || ''} ${endereco.logradouro?.nome || 'N/A'}<br>
+                    <strong>Bairro:</strong> ${endereco.bairro?.nome || 'N/A'}<br>
+                    <strong>Cidade:</strong> ${endereco.cidade?.nome || 'N/A'} - ${endereco.cidade?.uf?.sigla || ''}
+                </div>
+            `;
+        }
+
+        function formatCepExternoResponse(data) {
+            if (data.erro) {
+                return '<div class="data-card error"><strong>CEP nao encontrado no ViaCEP</strong></div>';
+            }
+            return `
+                <div class="data-card">
+                    <strong>Dados do ViaCEP</strong><br><br>
+                    <strong>CEP:</strong> ${data.cep || 'N/A'}<br>
+                    <strong>Logradouro:</strong> ${data.logradouro || 'N/A'}<br>
+                    <strong>Bairro:</strong> ${data.bairro || 'N/A'}<br>
+                    <strong>Cidade:</strong> ${data.localidade || 'N/A'} - ${data.uf || ''}
+                </div>
+            `;
+        }
+
+        function formatCidadeResponse(cidade) {
+            return `
+                <div class="data-card">
+                    <strong>Cidade Encontrada</strong><br><br>
+                    <strong>ID:</strong> ${cidade.idCidade}<br>
+                    <strong>Nome:</strong> ${cidade.nome}<br>
+                    <strong>UF:</strong> ${cidade.uf?.nome || 'N/A'} (${cidade.uf?.sigla || ''})
+                </div>
+            `;
+        }
+
+        // Formatadores de resposta - Ordem de Servico
+        function formatClienteResponse(cliente) {
+            let endereco = 'Nao informado';
+            if (cliente.endereco && cliente.endereco.endereco) {
+                const e = cliente.endereco.endereco;
+                const parts = [];
+                if (e.logradouro?.nome) parts.push(e.logradouro.nome);
+                if (cliente.endereco.numero) parts.push(`n ${cliente.endereco.numero}`);
+                if (e.bairro?.nome) parts.push(e.bairro.nome);
+                if (e.cidade?.nome) parts.push(e.cidade.nome);
+                if (parts.length > 0) endereco = parts.join(', ');
+            }
+
+            return `
+                <div class="data-card">
+                    <strong>Cliente Encontrado</strong><br><br>
+                    <strong>Nome:</strong> ${cliente.nome || 'N/A'}<br>
+                    <strong>CPF:</strong> ${formatCpf(cliente.cpf)}<br>
+                    <strong>Endereco:</strong> ${endereco}
+                    ${cliente.endereco?.complemento ? `<br><strong>Complemento:</strong> ${cliente.endereco.complemento}` : ''}
+                </div>
+            `;
+        }
+
+        function formatPacienteResponse(paciente) {
+            let endereco = 'Nao informado';
+            if (paciente.endereco && paciente.endereco.endereco) {
+                const e = paciente.endereco.endereco;
+                const parts = [];
+                if (e.logradouro?.nome) parts.push(e.logradouro.nome);
+                if (paciente.endereco.numero) parts.push(`n ${paciente.endereco.numero}`);
+                if (e.bairro?.nome) parts.push(e.bairro.nome);
+                if (e.cidade?.nome) parts.push(e.cidade.nome);
+                if (parts.length > 0) endereco = parts.join(', ');
+            }
+
+            return `
+                <div class="data-card">
+                    <strong>Paciente Encontrado</strong><br><br>
+                    <strong>Nome:</strong> ${paciente.nome || 'N/A'}<br>
+                    <strong>CPF:</strong> ${formatCpf(paciente.cpf)}<br>
+                    <strong>Endereco:</strong> ${endereco}
+                </div>
+            `;
+        }
+
+        function formatServicosResponse(servicos) {
+            if (!servicos || servicos.length === 0) {
+                return '<div class="data-card">Nenhum servico encontrado.</div>';
+            }
+
+            let html = '<div class="data-list">';
+            servicos.forEach(s => {
+                html += `
+                    <div class="data-list-item">
+                        <strong>${s.tipoServico}</strong><br>
+                        <small>Codigo: ${s.cod} | Valor: R$ ${s.valor.toFixed(2)}</small>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            return `Encontrei <strong>${servicos.length}</strong> servicos disponiveis:${html}`;
+        }
+
+        function formatMedicamentosResponse(medicamentos) {
+            if (!medicamentos || medicamentos.length === 0) {
+                return '<div class="data-card">Nenhum medicamento encontrado.</div>';
+            }
+
+            let html = '<div class="data-list">';
+            medicamentos.forEach(m => {
+                html += `
+                    <div class="data-list-item">
+                        <strong>${m.nomeGenerico}</strong><br>
+                        <small>ID: ${m.idMedicamento} ${m.fabricante ? `| Fabricante: ${m.fabricante}` : ''}</small>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            return `Encontrei <strong>${medicamentos.length}</strong> medicamentos:${html}`;
+        }
+
+        function formatCidResponse(cid) {
+            return `
+                <div class="data-card">
+                    <strong>CID Encontrado</strong><br><br>
+                    <strong>Codigo:</strong> ${cid.codigo}<br>
+                    <strong>Descricao:</strong> ${cid.descricao}
+                </div>
+            `;
+        }
+
+        function formatOrdensServicoResponse(ordens) {
+            if (!ordens || ordens.length === 0) {
+                return '<div class="data-card">Nenhuma ordem de servico encontrada.</div>';
+            }
+            let html = '<div class="data-list">';
+            ordens.forEach(os => {
+                const data = formatarData(os.dataEmissao);
+                html += `
+                    <div class="data-list-item">
+                        <strong>OS #${os.nroOrdem}</strong> - ${os.cliente?.nome || 'N/A'}<br>
+                        <small>Data: ${data} | Total: R$ ${os.total?.toFixed(2) || '0.00'}</small>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            return `Encontrei <strong>${ordens.length}</strong> ordem(ns) de servico:${html}`;
+        }
+
+        function formatOrdemServicoResponse(os) {
+            const data = formatarData(os.dataEmissao);
+            let servicosHtml = '';
+            if (os.servicos && os.servicos.length > 0) {
+                servicosHtml = '<br><strong>Servicos:</strong><ul style="margin:5px 0;padding-left:20px;">';
+                os.servicos.forEach(s => {
+                    servicosHtml += `<li>${s.tipoServico} - R$ ${s.valor?.toFixed(2)}</li>`;
+                });
+                servicosHtml += '</ul>';
+            }
+            return `
+                <div class="data-card">
+                    <strong>Ordem de Servico #${os.nroOrdem}</strong><br><br>
+                    <strong>Cliente:</strong> ${os.cliente?.nome || 'N/A'}<br>
+                    <strong>Data:</strong> ${data}<br>
+                    <strong>Descricao:</strong> ${os.descricao || 'N/A'}
+                    ${servicosHtml}
+                    <strong>Total:</strong> R$ ${os.total?.toFixed(2) || '0.00'}
+                </div>
+            `;
+        }
+
+        function formatReceitasMedicasResponse(receitas) {
+            if (!receitas || receitas.length === 0) {
+                return '<div class="data-card">Nenhuma receita medica encontrada.</div>';
+            }
+            let html = '<div class="data-list">';
+            receitas.forEach(r => {
+                const data = formatarData(r.dataEmissao);
+                html += `
+                    <div class="data-list-item">
+                        <strong>Receita #${r.numeroReceita}</strong> - ${r.paciente?.nome || 'N/A'}<br>
+                        <small>Data: ${data} | CID: ${r.cid?.codigo || 'N/A'}</small>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            return `Encontrei <strong>${receitas.length}</strong> receita(s) medica(s):${html}`;
+        }
+
+        function formatReceitaMedicaResponse(r) {
+            const data = formatarData(r.dataEmissao);
+            let prescricoesHtml = '';
+            if (r.prescricoes && r.prescricoes.length > 0) {
+                prescricoesHtml = '<br><strong>Prescricoes:</strong><ul style="margin:5px 0;padding-left:20px;">';
+                r.prescricoes.forEach(p => {
+                    prescricoesHtml += `<li>${p.medicamento?.nomeGenerico || 'N/A'} - ${p.posologia}</li>`;
+                });
+                prescricoesHtml += '</ul>';
+            }
+            return `
+                <div class="data-card">
+                    <strong>Receita Medica #${r.numeroReceita}</strong><br><br>
+                    <strong>Paciente:</strong> ${r.paciente?.nome || 'N/A'}<br>
+                    <strong>Medico:</strong> ${r.medico?.nome || 'N/A'}<br>
+                    <strong>Data:</strong> ${data}<br>
+                    <strong>CID:</strong> ${r.cid?.codigo || 'N/A'} - ${r.cid?.descricao || ''}
+                    ${prescricoesHtml}
+                </div>
+            `;
+        }
+
+        function formatCpf(cpf) {
+            if (!cpf) return 'N/A';
+            return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+        }
+
+        function showHelp() {
+            return `
+                Pode falar comigo de forma natural! Aqui vao alguns exemplos:<br><br>
+                <strong>Enderecos:</strong><br>
+                - "endereco id 1" ou "me mostra o endereco 1"<br>
+                - "endereco cep 85801000" ou "buscar por cep 85801000"<br>
+                - "cidade 1" ou "qual cidade 1"<br>
+                - "consultar cep 85851010" ou "cep externo 85851010"<br><br>
+                <strong>Ordem de Servico:</strong><br>
+                - "cliente 12345678901" ou "buscar cliente cpf 12345678901"<br>
+                - "quais servicos tem?" ou "listar servicos"<br>
+                - "me mostra as ordens" ou "listar ordens"<br>
+                - "os 1" ou "ordem numero 1"<br><br>
+                <strong>Receita Medica:</strong><br>
+                - "paciente 12345678901" ou "buscar paciente cpf 12345678901"<br>
+                - "J00" ou "buscar cid J00"<br>
+                - "quais medicamentos?" ou "listar medicamentos"<br>
+                - "receita 1" ou "mostrar receita numero 1"<br><br>
+                <strong>Atalhos:</strong> Pode digitar so um CPF (11 digitos), um codigo CID (ex: J00), ou um numero de OS diretamente!
+            `;
+        }
+
+        // Funcao principal de processamento
+        async function processMessage(text) {
+            const intent = interpretIntent(text);
+
+            if (!intent) {
+                return 'Hmm, nao consegui entender. Tente algo como: "listar servicos", "cliente 12345678901", "os 1", "J00" ou digite "ajuda" para ver mais exemplos.';
+            }
+
+            try {
+                switch (intent.action) {
+                    // Enderecos
+                    case 'getEnderecoById':
+                        if (!intent.params.value) {
+                            return 'Por favor, informe o ID do endereco. Exemplo: "endereco id 1"';
+                        }
+                        const endereco = await getEnderecoById(intent.params.value);
+                        return formatEnderecoResponse(endereco);
+
+                    case 'getEnderecoByCep':
+                        if (!intent.params.value) {
+                            return 'Por favor, informe o CEP. Exemplo: "endereco cep 85801000"';
+                        }
+                        const enderecoCep = await getEnderecoByCep(intent.params.value);
+                        return formatEnderecoResponse(enderecoCep);
+
+                    case 'getCepExterno':
+                        if (!intent.params.value) {
+                            return 'Por favor, informe o CEP. Exemplo: "cep externo 85851010"';
+                        }
+                        const cepExterno = await getCepExterno(intent.params.value);
+                        return formatCepExternoResponse(cepExterno);
+
+                    case 'getCidadeById':
+                        if (!intent.params.value) {
+                            return 'Por favor, informe o ID da cidade. Exemplo: "cidade 1"';
+                        }
+                        const cidade = await getCidadeById(intent.params.value);
+                        return formatCidadeResponse(cidade);
+
+                    // Ordem de Servico
+                    case 'getClienteByCpf':
+                        if (!intent.params.value) {
+                            return 'Por favor, informe o CPF do cliente. Exemplo: "buscar cliente cpf 12345678901"';
+                        }
+                        const cliente = await getClienteByCpf(intent.params.value);
+                        return formatClienteResponse(cliente);
+
+                    case 'getServicos':
+                        const servicos = await getServicos();
+                        return formatServicosResponse(servicos);
+
+                    case 'getOrdensServico':
+                        const ordens = await getOrdensServico();
+                        return formatOrdensServicoResponse(ordens);
+
+                    case 'getOrdemByNumero':
+                        if (!intent.params.value) {
+                            return 'Por favor, informe o numero da OS. Exemplo: "ordem numero 1"';
+                        }
+                        const ordem = await getOrdemByNumero(intent.params.value);
+                        return formatOrdemServicoResponse(ordem);
+
+                    // Receita Medica
+                    case 'getPacienteByCpf':
+                        if (!intent.params.value) {
+                            return 'Por favor, informe o CPF do paciente. Exemplo: "buscar paciente cpf 12345678901"';
+                        }
+                        const paciente = await getPacienteByCpf(intent.params.value);
+                        return formatPacienteResponse(paciente);
+
+                    case 'getCidByCodigo':
+                        if (!intent.params.value) {
+                            return 'Por favor, informe o codigo do CID. Exemplo: "buscar cid J00"';
+                        }
+                        const cid = await getCidByCodigo(intent.params.value);
+                        return formatCidResponse(cid);
+
+                    case 'getMedicamentos':
+                        const meds = await getMedicamentos();
+                        return formatMedicamentosResponse(meds);
+
+                    case 'getMedicamentoByNome':
+                        if (!intent.params.value) {
+                            const allMeds = await getMedicamentos();
+                            return formatMedicamentosResponse(allMeds);
+                        }
+                        const filteredMeds = await getMedicamentoByNome(intent.params.value);
+                        return formatMedicamentosResponse(filteredMeds);
+
+                    case 'getReceitasMedicas':
+                        const receitas = await getReceitasMedicas();
+                        return formatReceitasMedicasResponse(receitas);
+
+                    case 'getReceitaByNumero':
+                        if (!intent.params.value) {
+                            return 'Por favor, informe o numero da receita. Exemplo: "receita numero 1"';
+                        }
+                        const receita = await getReceitaByNumero(intent.params.value);
+                        return formatReceitaMedicaResponse(receita);
+
+                    case 'showHelp':
+                        return showHelp();
+
+                    default:
+                        return 'Acao nao implementada.';
+                }
+            } catch (error) {
+                return `<div class="data-card error"><strong>Erro:</strong> ${error.message}</div>`;
+            }
+        }
+
+        // Funcoes de UI
+        function addMessage(content, isUser = false) {
+            const messagesDiv = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user' : 'bot'}`;
+
+            const time = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
+            messageDiv.innerHTML = `
+                <div class="message-content">${content}</div>
+                <span class="message-time">${time}</span>
+            `;
+
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function addLoadingMessage() {
+            const messagesDiv = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message bot';
+            messageDiv.id = 'loadingMessage';
+            messageDiv.innerHTML = `
+                <div class="message-content">
+                    <span class="loading"></span> Processando...
+                </div>
+            `;
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function removeLoadingMessage() {
+            const loading = document.getElementById('loadingMessage');
+            if (loading) loading.remove();
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('userInput');
+            const text = input.value.trim();
+
+            if (!text) return;
+
+            // Adicionar mensagem do usuario
+            addMessage(text, true);
+            input.value = '';
+
+            // Mostrar loading
+            addLoadingMessage();
+
+            // Processar e responder
+            const response = await processMessage(text);
+
+            // Remover loading e adicionar resposta
+            removeLoadingMessage();
+            addMessage(response, false);
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        // Focar no input ao carregar
+        window.onload = () => {
+            document.getElementById('userInput').focus();
+        };
+    </script>
+</body>
+</html>

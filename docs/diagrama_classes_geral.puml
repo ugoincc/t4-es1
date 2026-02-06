@@ -1,0 +1,202 @@
+@startuml Diagrama de Classes - Visao Geral
+
+skinparam classAttributeIconSize 0
+skinparam class {
+    BackgroundColor #E8F0FE
+    BorderColor #4472C4
+    ArrowColor #333333
+    HeaderBackgroundColor #4472C4
+    FontColor #333333
+    HeaderFontColor #FFFFFF
+}
+skinparam package {
+    BackgroundColor #F5F5F5
+    BorderColor #999999
+}
+
+title Diagrama de Classes - Visao Geral do Sistema
+
+' ==============================================
+' MODULO: MyEnderecoBO
+' ==============================================
+package "MyEnderecoBO\nunioeste.geral.endereco.bo" as pkg_end #FAFAFA {
+
+    class TipoLogradouro <<Serializable>> {
+        - int cod
+        - String nome
+    }
+
+    class Logradouro <<Serializable>> {
+        - int idLogradouro
+        - String nome
+        - TipoLogradouro tipo
+    }
+
+    class Bairro <<Serializable>> {
+        - int idBairro
+        - String nome
+    }
+
+    class UnidadeFederacao <<Serializable>> {
+        - String sigla
+        - String nome
+    }
+
+    class Cidade <<Serializable>> {
+        - int idCidade
+        - String nome
+        - UnidadeFederacao uf
+    }
+
+    class Endereco <<Serializable>> {
+        - int idEndereco
+        - String cep
+        - Logradouro logradouro
+        - Bairro bairro
+        - Cidade cidade
+    }
+
+    class EnderecoEspecifico <<Serializable>> {
+        - Endereco endereco
+        - int nroCasa
+        - String complemento
+        + int getNumero()
+        + void setNumero(int)
+    }
+}
+
+' ==============================================
+' MODULO: MyPessoaBO
+' ==============================================
+package "MyPessoaBO\nunioeste.geral.pessoa.bo" as pkg_pes #FAFAFA {
+
+    class DDI <<Serializable>> {
+        - int idDDI
+        - String codigo
+        - String pais
+    }
+
+    class DDD <<Serializable>> {
+        - int idDDD
+        - String codigo
+        - DDI ddi
+        - String regiao
+    }
+
+    class Telefone <<Serializable>> {
+        - int idTelefone
+        - String numero
+        - DDD ddd
+        + String getNumeroCompleto()
+    }
+
+    class Email <<Serializable>> {
+        - int idEmail
+        - String enderecoEmail
+    }
+
+    abstract class Pessoa <<Serializable>> {
+        - int idPessoa
+        - String nome
+        - String nomeSocial
+        - EnderecoEspecifico endereco
+        - List<Email> emails
+        - List<Telefone> telefones
+        + void addEmail(Email)
+        + void addTelefone(Telefone)
+    }
+
+    class PessoaFisica {
+        - String cpf
+        - String primeiroNome
+        - String sobreNome
+    }
+}
+
+' ==============================================
+' MODULO: MyOrdemBO
+' ==============================================
+package "MyOrdemBO\nunioeste.geral.os.bo" as pkg_os #FAFAFA {
+
+    class Cliente {
+    }
+
+    class Atendente {
+        - int cod
+    }
+
+    class Servico <<Serializable>> {
+        - int cod
+        - String tipoServico
+        - double valor
+    }
+
+    class OrdemServico <<Serializable>> {
+        - int nroOrdem
+        - String descricao
+        - Date dataEmissao
+        - double total
+        - Cliente cliente
+        - Atendente atendente
+        - List<Servico> servicos
+        + void adicionarServico(Servico)
+        + void calcularTotal()
+    }
+}
+
+' ==============================================
+' MODULO: MyReceitaBO
+' ==============================================
+package "MyReceitaBO\nunioeste.geral.receita.bo" as pkg_rec #FAFAFA {
+
+    class Paciente {
+    }
+
+    class Medico {
+        - String crm
+        - Date dataEmissaoCRM
+        - String ufCRM
+    }
+
+    class CID <<Serializable>> {
+        - String codigo
+        - String descricao
+    }
+
+    class Medicamento <<Serializable>> {
+        - int idMedicamento
+        - String nomeGenerico
+        - String fabricante
+    }
+
+    class Prescricao <<Serializable>> {
+        - Medicamento medicamento
+        - String posologia
+        - String periodoUso
+    }
+
+    class ReceitaMedica <<Serializable>> {
+        - int numeroReceita
+        - Date dataEmissao
+        - Medico medico
+        - Paciente paciente
+        - CID cid
+        - List<Prescricao> prescricoes
+        + void adicionarPrescricao(Prescricao)
+    }
+}
+
+' ==============================================
+' HERANCA
+' ==============================================
+PessoaFisica --|> Pessoa
+
+Cliente --|> PessoaFisica
+Atendente --|> PessoaFisica
+Paciente --|> PessoaFisica
+Medico --|> PessoaFisica
+
+' Composicoes removidas para melhor visualizacao.
+' Ver diagramas individuais por modulo para relacionamentos completos.
+
+@enduml

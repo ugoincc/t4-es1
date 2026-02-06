@@ -1,0 +1,58 @@
+@startuml Diagrama de Classes - MyOrdemBO
+
+skinparam classAttributeIconSize 0
+skinparam class {
+    BackgroundColor #E8F0FE
+    BorderColor #4472C4
+    ArrowColor #333333
+    HeaderBackgroundColor #4472C4
+    FontColor #333333
+    HeaderFontColor #FFFFFF
+}
+
+title Diagrama de Classes - MyOrdemBO
+
+package "unioeste.geral.os.bo" {
+
+    class Cliente {
+    }
+
+    class Atendente {
+        - int cod
+        + getters/setters()
+    }
+
+    class OrdemServico <<Serializable>> {
+        - int nroOrdem
+        - String descricao
+        - Date dataEmissao
+        - double total
+        - Cliente cliente
+        - Atendente atendente
+        - List<Servico> servicos
+        + OrdemServico()
+        + void adicionarServico(Servico s)
+        + void calcularTotal()
+        + getters/setters()
+    }
+
+    class Servico <<Serializable>> {
+        - int cod
+        - String tipoServico
+        - double valor
+        + getters/setters()
+    }
+}
+
+package "unioeste.geral.pessoa.bo" #F5F5F5 {
+    class PessoaFisica <<ref>>
+}
+
+Cliente --|> PessoaFisica : extends
+Atendente --|> PessoaFisica : extends
+
+OrdemServico "1" o-- "1" Cliente : cliente
+OrdemServico "1" o-- "1" Atendente : atendente
+OrdemServico "1" o-- "1..*" Servico : servicos
+
+@enduml

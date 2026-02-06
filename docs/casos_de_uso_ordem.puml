@@ -1,0 +1,66 @@
+@startuml Casos de Uso - MyOrdemServicos
+
+left to right direction
+skinparam packageStyle rectangle
+skinparam actorStyle awesome
+skinparam usecase {
+    BackgroundColor #E8F0FE
+    BorderColor #4472C4
+    ArrowColor #4472C4
+}
+
+title Diagrama de Casos de Uso - MyOrdemServicos
+
+actor "Atendente" as atendente
+
+rectangle "MyOrdemServicos" {
+    usecase "Manter Cliente" as UC06 #D6E4F0
+    usecase "Cadastrar Cliente" as UC06a
+    usecase "Consultar Cliente\npor CPF" as UC07
+
+    usecase "Consultar Atendente" as UC08
+    usecase "Consultar Servico" as UC09
+
+    usecase "Manter Ordem\nde Servico" as UC10 #D6E4F0
+    usecase "Criar Ordem\nde Servico" as UC10a
+    usecase "Listar Ordens\nde Servico" as UC10b
+    usecase "Consultar Ordem\npor Numero" as UC10c
+}
+
+atendente --> UC06
+atendente --> UC08
+atendente --> UC09
+atendente --> UC10
+
+UC06 ..> UC06a : <<include>>
+UC06 ..> UC07 : <<include>>
+
+UC10 ..> UC10a : <<include>>
+UC10 ..> UC10b : <<include>>
+UC10 ..> UC10c : <<include>>
+
+UC10a ..> UC07 : <<include>>
+UC10a ..> UC09 : <<include>>
+UC10a ..> UC08 : <<include>>
+
+UC07 ..> UC06a : <<extend>>
+
+note right of UC06
+    Criar + Consultar
+    (sem Update/Delete)
+end note
+
+note right of UC10a
+    Inclui selecao de cliente,
+    atendente e servicos.
+    Data e total calculados
+    automaticamente.
+end note
+
+note left of UC07
+    Se cliente nao encontrado,
+    pode estender para
+    Cadastrar Cliente
+end note
+
+@enduml

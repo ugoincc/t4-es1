@@ -1,0 +1,54 @@
+@startuml Casos de Uso - MyEnderecoServicos
+
+left to right direction
+skinparam packageStyle rectangle
+skinparam actorStyle awesome
+skinparam usecase {
+    BackgroundColor #E8F0FE
+    BorderColor #4472C4
+    ArrowColor #4472C4
+}
+
+title Diagrama de Casos de Uso - MyEnderecoServicos
+
+actor "Atendente" as atendente
+actor "Medico" as medico
+actor "ViaCEP\n(Sistema Externo)" as viacep
+
+rectangle "MyEnderecoServicos" {
+    usecase "Cadastrar Endereco" as UC01
+    usecase "Consultar Endereco\npor ID" as UC02
+    usecase "Consultar Endereco\npor CEP" as UC03
+    usecase "Consultar Endereco\nExterno" as UC04
+    usecase "Consultar Cidade" as UC05
+}
+
+atendente --> UC01
+atendente --> UC02
+atendente --> UC03
+atendente --> UC04
+atendente --> UC05
+
+medico --> UC01
+medico --> UC02
+medico --> UC03
+medico --> UC04
+medico --> UC05
+
+UC04 --> viacep
+
+UC01 ..> UC04 : <<extend>>
+
+note right of UC04
+    Busca dados de endereco
+    na API publica ViaCEP
+    a partir do CEP informado
+end note
+
+note right of UC01
+    Ao cadastrar, pode
+    consultar CEP externo
+    para preencher dados
+end note
+
+@enduml

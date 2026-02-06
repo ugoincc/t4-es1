@@ -1,0 +1,75 @@
+@startuml Diagrama de Classes - MyEnderecoBO
+
+skinparam classAttributeIconSize 0
+skinparam class {
+    BackgroundColor #E8F0FE
+    BorderColor #4472C4
+    ArrowColor #333333
+    HeaderBackgroundColor #4472C4
+    FontColor #333333
+    HeaderFontColor #FFFFFF
+}
+
+title Diagrama de Classes - MyEnderecoBO
+
+package "unioeste.geral.endereco.bo" {
+
+    class Endereco <<Serializable>> {
+        - int idEndereco
+        - String cep
+        - Logradouro logradouro
+        - Bairro bairro
+        - Cidade cidade
+        + getters/setters()
+    }
+
+    class EnderecoEspecifico <<Serializable>> {
+        - Endereco endereco
+        - int nroCasa
+        - String complemento
+        + int getNumero()
+        + void setNumero(int nroCasa)
+        + getters/setters()
+    }
+
+    class Cidade <<Serializable>> {
+        - int idCidade
+        - String nome
+        - UnidadeFederacao uf
+        + getters/setters()
+    }
+
+    class UnidadeFederacao <<Serializable>> {
+        - String sigla
+        - String nome
+        + getters/setters()
+    }
+
+    class Bairro <<Serializable>> {
+        - int idBairro
+        - String nome
+        + getters/setters()
+    }
+
+    class Logradouro <<Serializable>> {
+        - int idLogradouro
+        - String nome
+        - TipoLogradouro tipo
+        + getters/setters()
+    }
+
+    class TipoLogradouro <<Serializable>> {
+        - int cod
+        - String nome
+        + getters/setters()
+    }
+}
+
+EnderecoEspecifico "1" o-- "1" Endereco : contem
+Endereco "1" o-- "1" Logradouro
+Endereco "1" o-- "1" Bairro
+Endereco "1" o-- "1" Cidade
+Cidade "1" o-- "1" UnidadeFederacao
+Logradouro "1" o-- "1" TipoLogradouro
+
+@enduml

@@ -1,0 +1,87 @@
+@startuml Diagrama de Classes - MyPessoaBO
+
+skinparam classAttributeIconSize 0
+skinparam class {
+    BackgroundColor #E8F0FE
+    BorderColor #4472C4
+    ArrowColor #333333
+    HeaderBackgroundColor #4472C4
+    FontColor #333333
+    HeaderFontColor #FFFFFF
+}
+
+title Diagrama de Classes - MyPessoaBO
+
+package "unioeste.geral.pessoa.bo" {
+
+    abstract class Pessoa <<Serializable>> {
+        - int idPessoa
+        - String nome
+        - String nomeSocial
+        - EnderecoEspecifico endereco
+        - List<Email> emails
+        - List<Telefone> telefones
+        + Pessoa()
+        + void addEmail(Email email)
+        + void addTelefone(Telefone telefone)
+        + getters/setters()
+    }
+
+    class PessoaFisica {
+        - String cpf
+        - String primeiroNome
+        - String sobreNome
+        + getters/setters()
+    }
+
+    class Email <<Serializable>> {
+        - int idEmail
+        - String enderecoEmail
+        + Email()
+        + Email(int idEmail, String enderecoEmail)
+        + getters/setters()
+    }
+
+    class Telefone <<Serializable>> {
+        - int idTelefone
+        - String numero
+        - DDD ddd
+        + Telefone()
+        + Telefone(int idTelefone, String numero, DDD ddd)
+        + String getNumeroCompleto()
+        + getters/setters()
+    }
+
+    class DDD <<Serializable>> {
+        - int idDDD
+        - String codigo
+        - DDI ddi
+        - String regiao
+        + DDD()
+        + DDD(int idDDD, String codigo, DDI ddi, String regiao)
+        + getters/setters()
+    }
+
+    class DDI <<Serializable>> {
+        - int idDDI
+        - String codigo
+        - String pais
+        + DDI()
+        + DDI(int idDDI, String codigo, String pais)
+        + getters/setters()
+    }
+}
+
+package "unioeste.geral.endereco.bo" #F5F5F5 {
+    class EnderecoEspecifico <<ref>>
+}
+
+PessoaFisica --|> Pessoa : extends
+
+Pessoa "1" *-- "1" EnderecoEspecifico : endereco
+Pessoa "1" o-- "0..*" Email : emails
+Pessoa "1" o-- "0..*" Telefone : telefones
+Telefone "1" o-- "1" DDD
+DDD "1" o-- "1" DDI
+
+@enduml

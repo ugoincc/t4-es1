@@ -1,0 +1,69 @@
+@startuml Casos de Uso - MyReceitaServicos
+
+left to right direction
+skinparam packageStyle rectangle
+skinparam actorStyle awesome
+skinparam usecase {
+    BackgroundColor #E8F0FE
+    BorderColor #4472C4
+    ArrowColor #4472C4
+}
+
+title Diagrama de Casos de Uso - MyReceitaServicos
+
+actor "Medico" as medico
+
+rectangle "MyReceitaServicos" {
+    usecase "Manter Paciente" as UC11 #D6E4F0
+    usecase "Cadastrar Paciente" as UC11a
+    usecase "Consultar Paciente\npor CPF" as UC12
+
+    usecase "Consultar Medico" as UC13
+    usecase "Consultar CID" as UC14
+    usecase "Consultar\nMedicamento" as UC15
+
+    usecase "Manter Receita\nMedica" as UC16 #D6E4F0
+    usecase "Emitir Receita\nMedica" as UC16a
+    usecase "Listar Receitas\nMedicas" as UC16b
+    usecase "Consultar Receita\npor Numero" as UC16c
+}
+
+medico --> UC11
+medico --> UC13
+medico --> UC14
+medico --> UC15
+medico --> UC16
+
+UC11 ..> UC11a : <<include>>
+UC11 ..> UC12 : <<include>>
+
+UC16 ..> UC16a : <<include>>
+UC16 ..> UC16b : <<include>>
+UC16 ..> UC16c : <<include>>
+
+UC16a ..> UC12 : <<include>>
+UC16a ..> UC13 : <<include>>
+UC16a ..> UC14 : <<include>>
+UC16a ..> UC15 : <<include>>
+
+UC12 ..> UC11a : <<extend>>
+
+note right of UC11
+    Criar + Consultar
+    (sem Update/Delete)
+end note
+
+note right of UC16a
+    Inclui selecao de paciente,
+    medico, CID e medicamentos.
+    Data de emissao definida
+    automaticamente.
+end note
+
+note left of UC12
+    Se paciente nao encontrado,
+    pode estender para
+    Cadastrar Paciente
+end note
+
+@enduml

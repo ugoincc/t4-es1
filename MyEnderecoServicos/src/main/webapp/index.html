@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Painel Principal - Sistema Integrado</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; max-width: 900px; margin: 0 auto; padding: 20px; background-color: #f4f4f9; }
+        h1 { color: #2c3e50; text-align: center; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .card h2 { margin-top: 0; color: #2980b9; font-size: 1.2em; }
+
+        .form-group { margin-bottom: 10px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; }
+        input[type="text"], input[type="number"] { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+
+        button { background-color: #3498db; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-size: 14px; }
+        button:hover { background-color: #2980b9; }
+        button.secondary { background-color: #27ae60; }
+
+        pre { background: #2c3e50; color: #ecf0f1; padding: 15px; border-radius: 4px; overflow-x: auto; min-height: 50px; }
+        .response-area { position: relative; }
+
+        .modules-section { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px; }
+
+        .module-card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+
+        .module-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .module-card .icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+        }
+
+        .module-card h3 {
+            margin: 0 0 10px 0;
+            font-size: 1.2em;
+        }
+
+        .module-card p {
+            margin: 0;
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .module-card.endereco { border-top: 4px solid #3498db; }
+        .module-card.endereco .icon { color: #3498db; }
+
+        .module-card.ordem { border-top: 4px solid #e67e22; }
+        .module-card.ordem .icon { color: #e67e22; }
+
+        .module-card.receita { border-top: 4px solid #27ae60; }
+        .module-card.receita .icon { color: #27ae60; }
+
+        .module-card.chatbot { border-top: 4px solid #9b59b6; }
+        .module-card.chatbot .icon { color: #9b59b6; }
+
+        .section-title {
+            color: #2c3e50;
+            font-size: 1.1em;
+            margin: 30px 0 15px 0;
+            padding-bottom: 5px;
+            border-bottom: 2px solid #eee;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        .status-indicator.online { background-color: #27ae60; }
+        .status-indicator.offline { background-color: #e74c3c; }
+        .status-indicator.checking { background-color: #f39c12; animation: pulse 1s infinite; }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .service-status {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        .service-item {
+            display: flex;
+            align-items: center;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Sistema Integrado de Servicos</h1>
+
+    <h2 class="section-title">Modulos do Sistema</h2>
+
+    <div class="modules-section">
+        <a href="ordem-servico.html" class="module-card ordem">
+            <div class="icon">🔧</div>
+            <h3>Ordem de Servico</h3>
+            <p>Cadastrar e gerenciar ordens de servico para clientes</p>
+        </a>
+
+        <a href="receita-medica.html" class="module-card receita">
+            <div class="icon">💊</div>
+            <h3>Receita Medica</h3>
+            <p>Emitir receitas medicas com prescricoes de medicamentos</p>
+        </a>
+
+        <a href="chatbot.html" class="module-card chatbot">
+            <div class="icon">🤖</div>
+            <h3>Assistente Virtual</h3>
+            <p>Consultar dados via linguagem natural</p>
+        </a>
+    </div>
+
+    <div class="card">
+        <h2>Status dos Servicos</h2>
+        <div class="service-status">
+            <div class="service-item">
+                <span class="status-indicator checking" id="statusEndereco"></span>
+                <span>MyEnderecoServicos</span>
+            </div>
+            <div class="service-item">
+                <span class="status-indicator checking" id="statusOrdem"></span>
+                <span>MyOrdemServicos</span>
+            </div>
+            <div class="service-item">
+                <span class="status-indicator checking" id="statusReceita"></span>
+                <span>MyReceitaServicos</span>
+            </div>
+        </div>
+    </div>
+
+    <h2 class="section-title">Modulo de Enderecos (Testes)</h2>
+
+    <div class="card">
+        <h2>1. Consultar API Externa (ViaCEP)</h2>
+        <p>Testa o metodo <code>obterEnderecoExterno</code></p>
+        <div class="form-group">
+            <label>CEP:</label>
+            <input type="text" id="cepExterno" placeholder="Ex: 85851010" value="85851010">
+        </div>
+        <button onclick="buscarExterno()">Consultar na Nuvem</button>
+        <div class="response-area">
+            <pre id="resExterno">Aguardando requisicao...</pre>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>2. Cadastrar Endereco (Banco Local)</h2>
+        <p>Testa o metodo <code>cadastrarEndereco</code>. <small>(IDs devem existir no banco)</small></p>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div class="form-group">
+                <label>CEP:</label>
+                <input type="text" id="cadCep" value="99999000">
+            </div>
+            <div class="form-group">
+                <label>ID Cidade:</label>
+                <input type="number" id="cadIdCidade" value="1">
+            </div>
+            <div class="form-group">
+                <label>ID Bairro:</label>
+                <input type="number" id="cadIdBairro" value="1">
+            </div>
+            <div class="form-group">
+                <label>ID Logradouro:</label>
+                <input type="number" id="cadIdLogradouro" value="1">
+            </div>
+        </div>
+        <button class="secondary" onclick="cadastrar()">Salvar no Banco</button>
+        <div class="response-area">
+            <pre id="resCadastro">...</pre>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>3. Consultas Locais (Banco de Dados)</h2>
+        <div style="display: flex; gap: 10px;">
+            <div style="flex: 1;">
+                <label>Buscar por ID:</label>
+                <div style="display: flex; gap: 5px;">
+                    <input type="number" id="buscaId" placeholder="ID" value="1">
+                    <button onclick="buscarPorId()">Buscar</button>
+                </div>
+            </div>
+            <div style="flex: 1;">
+                <label>Buscar por CEP:</label>
+                <div style="display: flex; gap: 5px;">
+                    <input type="text" id="buscaCep" placeholder="CEP" value="85801000">
+                    <button onclick="buscarPorCep()">Buscar</button>
+                </div>
+            </div>
+        </div>
+        <div class="response-area" style="margin-top: 10px;">
+            <pre id="resBuscaLocal">Resultados aparecerao aqui...</pre>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>4. Consultar Cidade (Detalhes)</h2>
+        <p>Testa o metodo <code>obterCidade</code></p>
+        <div class="form-group">
+            <label>ID da Cidade:</label>
+            <div style="display: flex; gap: 5px;">
+                <input type="number" id="idCidade" placeholder="ID" value="1">
+                <button onclick="buscarCidade()">Buscar Cidade</button>
+            </div>
+        </div>
+        <div class="response-area">
+            <pre id="resCidade">...</pre>
+        </div>
+    </div>
+
+    <script>
+        const BASE_URL = 'http://localhost:8080/MyEnderecoServicos/resources/endereco';
+        const BASE_URL_OS = 'http://localhost:8080/MyOrdemServicos/resources';
+        const BASE_URL_RECEITA = 'http://localhost:8080/MyReceitaServicos/resources';
+
+        // Verificar status dos servicos ao carregar
+        document.addEventListener('DOMContentLoaded', function() {
+            checkServiceStatus('statusEndereco', BASE_URL + '/cidade/1');
+            checkServiceStatus('statusOrdem', BASE_URL_OS + '/servico');
+            checkServiceStatus('statusReceita', BASE_URL_RECEITA + '/medicamento');
+        });
+
+        async function checkServiceStatus(elementId, url) {
+            const indicator = document.getElementById(elementId);
+            try {
+                const response = await fetch(url, { method: 'GET' });
+                if (response.ok) {
+                    indicator.className = 'status-indicator online';
+                } else {
+                    indicator.className = 'status-indicator offline';
+                }
+            } catch (error) {
+                indicator.className = 'status-indicator offline';
+            }
+        }
+
+        function showResponse(elementId, data) {
+            const el = document.getElementById(elementId);
+            el.textContent = JSON.stringify(data, null, 4);
+            el.style.borderColor = data.error ? 'red' : '#2ecc71';
+        }
+
+        // 1. Buscar Externo
+        async function buscarExterno() {
+            const cep = document.getElementById('cepExterno').value;
+            document.getElementById('resExterno').textContent = "Carregando...";
+            try {
+                const response = await fetch(`${BASE_URL}/externo/${cep}`);
+                const data = await response.json();
+                showResponse('resExterno', data);
+            } catch (error) {
+                showResponse('resExterno', { erro: "Falha na requisicao", detalhe: error.message });
+            }
+        }
+
+        // 2. Cadastrar
+        async function cadastrar() {
+            const payload = {
+                cep: document.getElementById('cadCep').value,
+                cidade: { idCidade: parseInt(document.getElementById('cadIdCidade').value) },
+                bairro: { idBairro: parseInt(document.getElementById('cadIdBairro').value) },
+                logradouro: { idLogradouro: parseInt(document.getElementById('cadIdLogradouro').value) }
+            };
+            document.getElementById('resCadastro').textContent = "Enviando...";
+            try {
+                const response = await fetch(BASE_URL + '/criar', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const text = await response.text();
+                try {
+                    const json = JSON.parse(text);
+                    showResponse('resCadastro', json);
+                } catch(e) {
+                    document.getElementById('resCadastro').textContent = "Status: " + response.status + "\n" + text;
+                }
+            } catch (error) {
+                showResponse('resCadastro', { erro: "Falha ao conectar", detalhe: error.message });
+            }
+        }
+
+        // 3. Buscar Endereco por ID
+        async function buscarPorId() {
+            const id = document.getElementById('buscaId').value;
+            try {
+                const response = await fetch(`${BASE_URL}/id/${id}`);
+                if(response.status === 404) {
+                    showResponse('resBuscaLocal', { erro: "ID nao encontrado no banco." });
+                    return;
+                }
+                const data = await response.json();
+                showResponse('resBuscaLocal', data);
+            } catch (error) {
+                showResponse('resBuscaLocal', { erro: error.message });
+            }
+        }
+
+        // 4. Buscar Endereco por CEP
+        async function buscarPorCep() {
+            const cep = document.getElementById('buscaCep').value;
+            try {
+                const response = await fetch(`${BASE_URL}/cep/${cep}`);
+                if(response.status === 404) {
+                    showResponse('resBuscaLocal', { erro: "CEP nao encontrado no banco." });
+                    return;
+                }
+                const data = await response.json();
+                showResponse('resBuscaLocal', data);
+            } catch (error) {
+                showResponse('resBuscaLocal', { erro: error.message });
+            }
+        }
+
+        // 5. Buscar Cidade
+        async function buscarCidade() {
+            const id = document.getElementById('idCidade').value;
+            try {
+                const response = await fetch(`${BASE_URL}/cidade/${id}`);
+                if(response.status === 404) {
+                    showResponse('resCidade', { erro: "Cidade nao encontrada." });
+                    return;
+                }
+                const data = await response.json();
+                showResponse('resCidade', data);
+            } catch (error) {
+                showResponse('resCidade', { erro: error.message });
+            }
+        }
+    </script>
+</body>
+</html>

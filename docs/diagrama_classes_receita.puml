@@ -1,0 +1,73 @@
+@startuml Diagrama de Classes - MyReceitaBO
+
+skinparam classAttributeIconSize 0
+skinparam class {
+    BackgroundColor #E8F0FE
+    BorderColor #4472C4
+    ArrowColor #333333
+    HeaderBackgroundColor #4472C4
+    FontColor #333333
+    HeaderFontColor #FFFFFF
+}
+
+title Diagrama de Classes - MyReceitaBO
+
+package "unioeste.geral.receita.bo" {
+
+    class Paciente {
+    }
+
+    class Medico {
+        - String crm
+        - Date dataEmissaoCRM
+        - String ufCRM
+        + getters/setters()
+    }
+
+    class ReceitaMedica <<Serializable>> {
+        - int numeroReceita
+        - Date dataEmissao
+        - Medico medico
+        - Paciente paciente
+        - CID cid
+        - List<Prescricao> prescricoes
+        + ReceitaMedica()
+        + void adicionarPrescricao(Prescricao p)
+        + getters/setters()
+    }
+
+    class Prescricao <<Serializable>> {
+        - Medicamento medicamento
+        - String posologia
+        - String periodoUso
+        + getters/setters()
+    }
+
+    class CID <<Serializable>> {
+        - String codigo
+        - String descricao
+        + getters/setters()
+    }
+
+    class Medicamento <<Serializable>> {
+        - int idMedicamento
+        - String nomeGenerico
+        - String fabricante
+        + getters/setters()
+    }
+}
+
+package "unioeste.geral.pessoa.bo" #F5F5F5 {
+    class PessoaFisica <<ref>>
+}
+
+Paciente --|> PessoaFisica : extends
+Medico --|> PessoaFisica : extends
+
+ReceitaMedica "1" o-- "1" Paciente : paciente
+ReceitaMedica "1" o-- "1" Medico : medico
+ReceitaMedica "1" o-- "1" CID : cid
+ReceitaMedica "1" *-- "1..*" Prescricao : prescricoes
+Prescricao "1" o-- "1" Medicamento : medicamento
+
+@enduml

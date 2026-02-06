@@ -1,0 +1,98 @@
+@startuml Casos de Uso - Visao Geral
+
+left to right direction
+skinparam packageStyle rectangle
+skinparam actorStyle awesome
+skinparam usecase {
+    BackgroundColor #E8F0FE
+    BorderColor #4472C4
+    ArrowColor #4472C4
+}
+
+title Diagrama de Casos de Uso - Visao Geral do Sistema
+
+actor "Atendente" as atendente
+actor "Medico" as medico
+actor "ViaCEP\n(Sistema Externo)" as viacep
+
+rectangle "MyEnderecoServicos" as pkg_end #F5F5F5 {
+    usecase "Cadastrar Endereco" as UC_END1
+    usecase "Consultar Endereco\npor ID" as UC_END2
+    usecase "Consultar Endereco\npor CEP" as UC_END3
+    usecase "Consultar Endereco\nExterno (ViaCEP)" as UC_END4
+    usecase "Consultar Cidade" as UC_END5
+}
+
+rectangle "MyOrdemServicos" as pkg_os #F5F5F5 {
+    usecase "Manter Cliente" as UC_OS1 #D6E4F0
+    usecase "Consultar Atendente" as UC_OS2
+    usecase "Consultar Servico" as UC_OS3
+    usecase "Manter Ordem\nde Servico" as UC_OS4 #D6E4F0
+}
+
+rectangle "MyReceitaServicos" as pkg_rec #F5F5F5 {
+    usecase "Manter Paciente" as UC_REC1 #D6E4F0
+    usecase "Consultar Medico" as UC_REC2
+    usecase "Consultar CID" as UC_REC3
+    usecase "Consultar\nMedicamento" as UC_REC4
+    usecase "Manter Receita\nMedica" as UC_REC5 #D6E4F0
+}
+
+' === Atendente ===
+atendente --> UC_END1
+atendente --> UC_END2
+atendente --> UC_END3
+atendente --> UC_END4
+atendente --> UC_END5
+atendente --> UC_OS1
+atendente --> UC_OS2
+atendente --> UC_OS3
+atendente --> UC_OS4
+
+' === Medico ===
+medico --> UC_END1
+medico --> UC_END2
+medico --> UC_END3
+medico --> UC_END4
+medico --> UC_END5
+medico --> UC_REC1
+medico --> UC_REC2
+medico --> UC_REC3
+medico --> UC_REC4
+medico --> UC_REC5
+
+' === Sistema Externo ===
+UC_END4 --> viacep
+
+' === Relacionamentos include ===
+UC_OS4 ..> UC_OS1 : <<include>>
+UC_OS4 ..> UC_OS2 : <<include>>
+UC_OS4 ..> UC_OS3 : <<include>>
+
+UC_REC5 ..> UC_REC1 : <<include>>
+UC_REC5 ..> UC_REC2 : <<include>>
+UC_REC5 ..> UC_REC3 : <<include>>
+UC_REC5 ..> UC_REC4 : <<include>>
+
+UC_OS1 ..> UC_END4 : <<extend>>
+UC_REC1 ..> UC_END4 : <<extend>>
+
+note bottom of pkg_end
+    Servico compartilhado de
+    enderecos, utilizado pelos
+    demais sistemas
+end note
+
+note bottom of pkg_os
+    Sistema de Ordens de Servico
+    Operacoes: Criar + Consultar
+    (sem Update/Delete)
+end note
+
+note bottom of pkg_rec
+    Sistema de Receitas Medicas
+    Operacoes: Criar + Consultar
+    (sem Update/Delete)
+end note
+
+@enduml
